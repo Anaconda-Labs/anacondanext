@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#08110d">
+<title>Durable agents with Metaflow — Anaconda Next</title>
+<meta name="description" content="Pydantic AI agents that survive crashes, retries, and restarts. A one-line capability journals every model and tool call into the Metaflow step, so a retry replays what finished and runs the rest live.">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.2/styles/github-dark.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.2/highlight.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded",()=>hljs.highlightAll())</script>
+</head>
+<body>
+
+<div class="ambient" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="../">
+      <span class="mark" aria-hidden="true">
+        <img src="../assets/incubation-logo.png" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:9px;display:block">
+      </span>
+      anaconda<em>next</em>
+    </a>
+    <div class="nav-links">
+      <a href="..">Home</a>
+      <a href="./">Writing</a>
+      <a class="nav-cta" href="../#play">Play something</a>
+    </div>
+  </div>
+</nav>
+
+<article>
+  <span class="when">October 2026 · Build notes</span>
+  <h1>Durable agents with Metaflow</h1>
+  <p class="lede"><a href="https://github.com/anaconda-incubation/metaflow-durability" target="_blank" rel="noopener">metaflow-durability</a>
+    makes Pydantic AI agents survive crashes, retries, and restarts inside Metaflow steps. Add one capability to the
+    agent, keep your <code>@retry</code>, and a failed step replays the model and tool calls that already finished
+    instead of paying for them again.</p>
+  <div class="byline">
+    <span><b>Source</b> github.com/anaconda-incubation/metaflow-durability</span>
+    <span><b>Owner</b> Albert DeFusco</span>
+    <span><b>Status</b> Action — released open source to gather evidence</span>
+    <span><b>Team</b> Anaconda Incubation</span>
+    <span><b>Stack</b> Pydantic AI · Metaflow</span>
+  </div>
+
+  <h2>Agent runs are long, expensive, and fragile</h2>
+  <p>Agent runs are expensive in every sense of the word: model tokens, tool calls, and wall-clock time. And sometimes
+    you have to retry the run. Here is a typical research agent inside a Metaflow step:</p>
+<pre><code class="language-python">from metaflow import FlowSpec, Parameter, retry, step
+from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+
+
+class Brief(BaseModel):
+    summary: str
+    sources: list[str]
+
+
+researcher = Agent("openai:gpt-5", name="researcher", output_type=Brief,
+                   tools=[duckduckgo_search_tool(), web_fetch_tool()])
+
+
+class ResearchFlow(FlowSpec):
+    topic = Parameter("topic")
+
+    @retry(times=1)
+    @step
+    def start(self):
+        # a failed fetch reruns every search and every model call
+        self.brief = researcher.run_sync(self.topic).output
+        self.next(self.end)
+
+    @step
+    def end(self):
+        print(self.brief.summary)
+
+
+if __name__ == "__main__":
+    ResearchFlow()</code></pre>
+  <p>Metaflow's <code>@retry</code> restarts the step when it fails. Without durability, the restart begins from
+    nothing: every search, every page fetch, and every model call the first attempt completed runs again.</p>
+
+  <h2>What durability means in Pydantic AI</h2>
+  <p>Pydantic AI makes an agent durable by journaling each model and tool call, so a restarted run replays what
+    finished and resumes where it left off. Four ideas carry the design:</p>
+  <ul>
+    <li><strong>Operation</strong> — each model request, tool call, and tool discovery is a named unit of work captured
+      in the journal.</li>
+    <li><strong>Capability</strong> — attached to the <code>Agent</code>. It hands every operation to an engine's
+      backend and manages everything else.</li>
+    <li><strong>Identity</strong> — stable operation names plus a hash of the inputs decide what can replay.</li>
+    <li><strong>Serialization</strong> — results are serialized to JSON so they can be stored in the journal and
+      returned on replay.</li>
+  </ul>
+  <p>Pydantic AI already supports a range of durable engines (see the
+    <a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/" target="_blank" rel="noopener">Durable Execution overview</a>);
+    MetaflowDurability is built on the same
+    <a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/backends/" target="_blank" rel="noopener">backend builder</a>.</p>
+
+  <h2>Metaflow already has everything a durable agent needs</h2>
+  <p>Durable engines usually bring their own infrastructure: workers, a server, and workflow code written in the
+    engine's style. Metaflow already provides the pieces a journal needs. A <strong>task</strong> is the unit of work,
+    an <strong>artifact</strong> is durable storage tied to that task, and <strong>@retry</strong> is the restart. So
+    no workers, server or workflow code: Metaflow's tasks, artifacts and retries are the engine.</p>
+  <p>The journal is saved as an artifact of the step, on success or on failure, and each retry reads the previous
+    attempt's journal back.</p>
+
+  <h2>The one-line change</h2>
+<pre><code class="language-python">from metaflow import FlowSpec, Parameter, retry, step
+from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+
+from metaflow_durability import MetaflowDurability
+
+
+class Brief(BaseModel):
+    summary: str
+    sources: list[str]
+
+
+researcher = Agent("openai:gpt-5", name="researcher", output_type=Brief,
+                   tools=[duckduckgo_search_tool(), web_fetch_tool()],
+                   capabilities=[MetaflowDurability()])  # &lt;- the one-line change
+
+
+class ResearchFlow(FlowSpec):
+    topic = Parameter("topic")
+
+    @retry(times=1)
+    @step
+    def start(self):
+        # a failed fetch replays finished calls, then runs the rest live
+        self.brief = researcher.run_sync(self.topic).output
+        self.next(self.end)
+
+    @step
+    def end(self):
+        print(self.brief.summary)
+
+
+if __name__ == "__main__":
+    ResearchFlow()</code></pre>
+  <p>There are no effective changes to existing agent usage:</p>
+  <table>
+    <thead><tr><th>You</th><th>MetaflowDurability</th></tr></thead>
+    <tbody>
+      <tr><td>Add <code>capabilities=[MetaflowDurability()]</code></td><td>Journals every model and tool call</td></tr>
+      <tr><td>Run the flow as usual</td><td>Saves the journal with the Metaflow step, even when it fails</td></tr>
+      <tr><td>Keep <code>@retry</code></td><td>Replays finished calls on the next attempt, runs the rest live</td></tr>
+      <tr><td>Open the Metaflow UI</td><td>Shows a live agent card on every step</td></tr>
+    </tbody>
+  </table>
+  <p>The source is on <a href="https://github.com/anaconda-incubation/metaflow-durability" target="_blank" rel="noopener">GitHub</a>. To install:</p>
+<pre><code class="language-bash">pip install "metaflow-durability[pydantic-ai]" "pydantic-ai-slim[openai,duckduckgo,web-fetch]"</code></pre>
+
+  <h2>Multiple agents, no extra work</h2>
+  <p>A step can call several agents, or the same agent several times. Give each agent its usual <code>name</code>
+    and add <code>MetaflowDurability()</code>; the backend journals each agent's calls separately and replays each one
+    on retry.</p>
+<pre><code class="language-python">from metaflow import FlowSpec, Parameter, retry, step
+from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+
+from metaflow_durability import MetaflowDurability
+
+
+class Brief(BaseModel):
+    summary: str
+    sources: list[str]
+
+
+researcher = Agent("openai:gpt-5", name="researcher", output_type=Brief,
+                   tools=[duckduckgo_search_tool(), web_fetch_tool()],
+                   capabilities=[MetaflowDurability()])
+writer = Agent("openai:gpt-5", name="writer",
+               capabilities=[MetaflowDurability()])
+
+
+class ReportFlow(FlowSpec):
+    topic = Parameter("topic")
+
+    @retry(times=1)
+    @step
+    def start(self):
+        brief = researcher.run_sync(self.topic).output
+        self.report = writer.run_sync(f"Write a report from: {brief.summary}").output
+        self.next(self.end)
+
+    @step
+    def end(self):
+        print(self.report)
+
+
+if __name__ == "__main__":
+    ReportFlow()</code></pre>
+  <p>The name is the journal key, so each agent in a step needs a unique one.</p>
+
+  <h2>The journal card</h2>
+  <p><img src="img/journal-card.png" alt="The Agent Journal card in the Metaflow UI, listing each model and tool call with whether it ran live or was replayed" style="width:100%;border-radius:12px;border:1px solid var(--line)"></p>
+  <p>An Agent Journal card is added to every step automatically. It refreshes live while the agent runs, and failed
+    attempts appear below the active or latest card, so you can see exactly what a retry replayed and what it ran
+    live.</p>
+
+  <h2>What's next</h2>
+  <ul>
+    <li><strong>Resume</strong> — continue an agent with a new message appended to its history.</li>
+    <li><strong>Fork</strong> — branch a new run from an agent's message history.</li>
+    <li><strong>Checkpointing and filesystem</strong> — explore integrations with Metaflow <code>@checkpoint</code> and
+      Workspaces (persistent filesystems) in Pydantic AI.</li>
+    <li><strong>Tool dispatch</strong> — execute each tool call with its own resources, for parallel and isolated
+      execution.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="tag">Try it</span>
+    <p><b><a href="https://github.com/anaconda-incubation/metaflow-durability" target="_blank" rel="noopener">github.com/anaconda-incubation/metaflow-durability</a></b>
+    — install it, add one capability, keep your <code>@retry</code>.
+    Feedback is welcome on the <a href="https://github.com/anaconda-incubation/metaflow-durability/issues" target="_blank" rel="noopener">GitHub issues page</a>.</p>
+  </div>
+</article>
+
+<footer>
+  <div class="foot-inner">
+    <a class="brand" href="../">
+      <span class="mark" aria-hidden="true">
+        <img src="../assets/incubation-logo.png" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:9px;display:block">
+      </span>
+      anaconda<em>next</em>
+    </a>
+    <span class="legal">© 2026 Anaconda, Inc.</span>
+  </div>
+</footer>
+
+</body>
+</html>
