@@ -12,6 +12,7 @@ const featured = experiments.find((e) => e.data.featured);
 const cards = experiments.filter((e) => !e.data.featured);
 const research = (await getCollection("research")).sort(byOrder);
 const partners = (await getCollection("partners")).sort(byOrder);
+const posts = (await getCollection("writing")).sort(byOrder);
 
 const FeaturedBody = featured ? (await render(featured)).Content : undefined;
 const renderAll = <T extends Parameters<typeof render>[0]>(entries: T[]) =>
@@ -130,66 +131,20 @@ const description =
       </div>
 
       <div class="posts">
-        <a class="post rise d1" href="/writing/durable-agents-with-metaflow.html">
-          <span class="when">October 2026</span>
-          <h3>Durable agents with Metaflow</h3>
-          <p>Pydantic AI agents that survive crashes, retries, and restarts. One capability journals every model and tool call
-             into the Metaflow step, so a retry replays what finished and runs the rest live — with no workers, server, or
-             workflow code.</p>
-          <span class="read">Read the write-up ▸</span>
-        </a>
-
-        <a class="post rise d1" href="/writing/deferring-package-discovery.html">
-          <span class="when">September 2026</span>
-          <h3>Deferring package discovery: what 37,801 packages taught us</h3>
-          <p>Baseline retrieval found the expected conda package in the top 10 for 62% of task queries. LLM enrichment moved the
-             number exactly nowhere. The full evaluation story — and why 83% with popularity reranking was a number we refused
-             to ship — including the biases we caught in our own expected-answer lists.</p>
-          <span class="read">Read the write-up ▸</span>
-        </a>
-
-        <a class="post rise d2" href="/writing/known-unsafe-vs-affirmatively-trusted.html">
-          <span class="when">September 2026</span>
-          <h3>Known-unsafe vs. affirmatively trusted: a conversation with GitHub</h3>
-          <p>GitHub's Advisory Database teaches an agent to avoid packages already known to be dangerous. It cannot tell an agent
-             that an unknown package is trustworthy. Notes on where controlled package admission fits beside vulnerability
-             intelligence, and the three integration paths that emerged.</p>
-          <span class="read">Read the write-up ▸</span>
-        </a>
-
-        <a class="post rise d3" href="/writing/building-maps-with-python.html">
-          <span class="when">September 2026</span>
-          <h3>Building Maps with Python in the browser</h3>
-          <p>Real geodesy, no install: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion circles
-             after Tissot's 1858 idea. How the projection math, the data pipeline, and the "no Python setup needed" promise
-             came together — sources cited all the way down.</p>
-          <span class="read">Read the write-up ▸</span>
-        </a>
-
-        <a class="post rise d3" href="/writing/clue-ladders.html">
-          <span class="when">September 2026</span>
-          <h3>Clue ladders: designing a daily puzzle about real packages</h3>
-          <p>Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or three.
-             How we fact-check every rung against Distro-DB records, project history, and maintainer lore — and decide which
-             famous stories <em>not</em> to use.</p>
-          <span class="read">Read the write-up ▸</span>
-        </a>
-
-        <div class="post soon rise d4">
-          <span class="when">Coming soon</span>
-          <h3>Observe before mutate: notebooks as an evidence loop for agents</h3>
-          <p>Why we think an agent that executes a small step, observes the real result, and leaves behind a replayable notebook
-             beats one that just answers — and how we're testing that with deterministic scoring.</p>
-          <span class="read">Drafting…</span>
-        </div>
-
-        <div class="post soon rise d4">
-          <span class="when">Coming soon</span>
-          <h3>Question → Action → Evidence → Decision</h3>
-          <p>The operating formula behind every run of this team: why prototypes stay subordinate to decisions, why negative
-             results are published first-class, and what changes when you separate evidence generation from production ownership.</p>
-          <span class="read">Drafting…</span>
-        </div>
+        {posts.map(({ id, data }, i) => {
+          const Tag = data.soon ? "div" : "a";
+          return (
+            <Tag
+              class:list={["post", "rise", delay(i), { soon: data.soon }]}
+              href={data.soon ? undefined : `/writing/${id}.html`}
+            >
+              <span class="when">{data.when}</span>
+              <h3>{data.title}</h3>
+              <p set:html={data.summary} />
+              <span class="read">{data.soon ? "Drafting…" : "Read the write-up ▸"}</span>
+            </Tag>
+          );
+        })}
       </div>
     </div>
   </section>

@@ -80,4 +80,36 @@ const partners = defineCollection({
   }),
 });
 
-export const collections = { experiments, research, partners };
+/**
+ * Write-ups. The file name is the URL: writing/foo.md is served at
+ * /writing/foo.html. The body is the article (markdown; raw HTML allowed).
+ */
+const writing = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/writing" }),
+  schema: z.object({
+    title: z.string(),
+    /** Position in writing lists, lowest first. */
+    order: z.number(),
+    /** Date as displayed, e.g. "September 2026" or "September 10, 2026". */
+    when: z.string(),
+    /** Short text for cards on the home page and the writing index. Inline HTML allowed. */
+    summary: z.string(),
+    /**
+     * A planned piece with no article yet: listed as "Coming soon", no page is
+     * built, and only title, order and summary are needed.
+     */
+    soon: z.boolean().default(false),
+    /** Shown after the date above the title, e.g. "Build notes". */
+    kind: z.string().optional(),
+    /** Meta description for search and link previews. */
+    description: z.string().optional(),
+    /** Opening paragraph under the title. Inline HTML allowed (links, <code>, <strong>). */
+    lede: z.string().optional(),
+    /** Facts row under the lede, e.g. { label: Team, value: Anaconda Incubation }. */
+    byline: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
+    /** Highlighted nav button. Defaults to "Play something". */
+    cta: link.optional(),
+  }),
+});
+
+export const collections = { experiments, research, partners, writing };

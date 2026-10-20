@@ -401,6 +401,10 @@ footer{border-top:1px solid var(--line-soft);padding:48px 0 56px;margin-top:72px
   code{font-family:var(--mono);font-size:.88em;background:rgba(163,247,108,.09);border:1px solid rgba(163,247,108,.18);border-radius:6px;padding:2px 7px;color:var(--lime)}
   pre{background:#0a1510;border:1px solid var(--line);border-radius:12px;padding:18px 20px;overflow-x:auto;margin:0 0 18px}
   pre code{background:none;border:none;padding:0;color:var(--body)}
+  /* Shiki writes its theme background inline; keep the site's code panel colour. */
+  pre.astro-code{background-color:#0a1510!important}
+  pre.astro-code code{color:inherit}
+  article img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line)}
   blockquote{
     margin:30px 0;padding:18px 26px;border-left:3px solid var(--green);
     background:linear-gradient(120deg,rgba(67,176,42,.08),transparent 70%);
@@ -416,7 +420,7 @@ footer{border-top:1px solid var(--line-soft);padding:48px 0 56px;margin-top:72px
   .callout .tag{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--lime);display:block;margin-bottom:12px}
   .callout p{margin:0 0 10px;color:var(--muted)}
   .callout p:last-child{margin:0}
-  .callout b{color:var(--text)}
+  .callout b,.callout strong{color:var(--text)}
 
   /* evidence table */
   table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
@@ -434,6 +438,7 @@ footer{border-top:1px solid var(--line-soft);padding:48px 0 56px;margin-top:72px
   .index-head{max-width:1160px;margin:0 auto;padding:88px 28px 56px}
   .index-head .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
   .index-head h1{margin:0 0 18px;font-size:clamp(38px,6vw,64px)}
+  .index-head h1 .grad{background:linear-gradient(100deg,var(--lime),var(--green) 55%,var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
   .index-head p{color:var(--muted);font-size:18px;max-width:640px}
   .postlist{max-width:1160px;margin:0 auto;padding:0 28px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
   .postcard{

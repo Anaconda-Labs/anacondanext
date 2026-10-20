@@ -1,0 +1,55 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import Brand from "../../components/Brand.astro";
+
+const posts = (await getCollection("writing")).sort((a, b) => a.data.order - b.data.order);
+const delay = (i: number) => `d${Math.min(i + 1, 4)}`;
+---
+<Base
+  title="Writing — Anaconda Next"
+  description="Write-ups from the Anaconda Incubation team: what we tried, what we measured, and what we'd do differently."
+  page="writing"
+>
+  <Nav
+    slot="nav"
+    links={[
+      { href: "/#experiments", label: "Experiments" },
+      { href: "/#research", label: "Research" },
+      { href: "/#partners", label: "Partners" },
+    ]}
+    cta={{ href: "/#play", label: "Play something" }}
+  />
+
+  <div class="index-head rise">
+    <div class="eyebrow">Writing</div>
+    <h1>Notes from <span class="grad">the lab</span></h1>
+    <p>We work in the open: every experiment here follows the same loop — question, action, evidence, decision, next evidence.
+       These write-ups are where that loop gets told properly, including the runs that didn't work.</p>
+  </div>
+
+  <div class="postlist">
+    {posts.map(({ id, data }, i) => {
+      const Tag = data.soon ? "div" : "a";
+      return (
+        <Tag
+          class:list={["postcard", "rise", delay(i), { soon: data.soon }]}
+          href={data.soon ? undefined : `/writing/${id}.html`}
+        >
+          <span class="when">{data.when}</span>
+          <h3>{data.title}</h3>
+          <p set:html={data.summary} />
+          <span class="read">{data.soon ? "Drafting…" : "Read ▸"}</span>
+        </Tag>
+      );
+    })}
+  </div>
+
+  <footer slot="footer">
+    <div class="foot-inner">
+      <Brand />
+      <span class="legal">© 2026 Anaconda, Inc. · Experiments may be incomplete, opinions may be wrong, evidence is real.</span>
+    </div>
+  </footer>
+</Base>
