@@ -75,6 +75,7 @@ li::marker{color:var(--green)}
 code{font-family:var(--mono);font-size:.88em;background:rgba(163,247,108,.09);border:1px solid rgba(163,247,108,.18);border-radius:6px;padding:2px 7px;color:var(--lime)}
 pre{background:#0a1510;border:1px solid var(--line);border-radius:12px;padding:18px 20px;overflow-x:auto;margin:0 0 18px}
 pre code{background:none;border:none;padding:0;color:#c7d6cb}
+pre code.hljs{background:none;padding:0}
 blockquote{
   margin:30px 0;padding:18px 26px;border-left:3px solid var(--green);
   background:linear-gradient(120deg,rgba(67,176,42,.08),transparent 70%);
