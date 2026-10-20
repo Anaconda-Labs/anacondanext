@@ -1,0 +1,11 @@
+---
+// The anaconda-next lockup used in the nav and footers.
+interface Props {
+  href?: string;
+}
+const { href = "/" } = Astro.props;
+---
+<a class="brand" href={href}>
+  <span class="mark" aria-hidden="true"><img src="/assets/incubation-logo.png" alt=""></span>
+  anaconda<em>next</em>
+</a>
