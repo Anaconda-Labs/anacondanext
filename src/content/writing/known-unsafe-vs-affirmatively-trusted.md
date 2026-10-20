@@ -11,88 +11,96 @@ byline:
   - { label: "Team", value: "Anaconda Incubation" }
   - { label: "Status", value: "Exploratory — no integration committed" }
 ---
-<h2>Two questions, not one</h2>
-<p>GitHub's Advisory Database lets an agent check planned dependencies against everything publicly known to be
-  vulnerable or malicious. That's a meaningful guardrail, and it's exactly the right tool for the packages the
-  world has already had to learn about the hard way.</p>
-<p>But it is, structurally, a <em>blocklist</em>. It cannot answer the prior question: is a package that nobody has
-  ever flagged — never examined, never named in an advisory — trustworthy to install? Establishing that requires a
-  different kind of infrastructure:</p>
-<ul>
-  <li><strong>Controlled package intake</strong> — packages enter through a review process, not a self-service upload</li>
-  <li><strong>Verified source materials</strong> — builds start from inspected sources, not from arbitrary wheels</li>
-  <li><strong>Independent builds</strong> — artifacts are rebuilt rather than mirrored</li>
-  <li><strong>Malware scanning</strong> — every release is scanned before publication</li>
-  <li><strong>Curated channels &amp; enterprise package policy</strong> — organizations control what their agents can resolve</li>
-</ul>
-<p>An admission-control layer like this doesn't replace vulnerability intelligence. It sits one step earlier:
-  vulnerability intelligence catches what the world knows, admission control constrains what can arrive in the
-  first place.</p>
+## Two questions, not one
 
-<h2>What the ecosystem's bad days taught us</h2>
-<p>Recent Python supply-chain incidents illustrate the distinction. In one cluster of incidents, malicious releases
-  of a popular computer-vision library appeared on public registries and were pulled by downstream users before
-  anyone could react. In two other cases, packages with injected malicious code propagated rapidly through public
-  mirrors.</p>
-<p>None of those malicious releases entered Anaconda <code>main</code>. Not because we predicted the attacks, but
-  because <code>main</code> is <strong>not a transparent mirror</strong>: intake delay, source verification, an
-  independent build pipeline, malware scanning, and controlled publishing break the rapid-publish attack path that
-  these incidents relied on.</p>
+GitHub's Advisory Database lets an agent check planned dependencies against everything publicly known to be
+vulnerable or malicious. That's a meaningful guardrail, and it's exactly the right tool for the packages the
+world has already had to learn about the hard way.
 
-<blockquote>
-  <p>The protection only holds when the environment is actually constrained to approved channels. It can be bypassed
-  by a setup script, by an unapproved channel, by a direct <code>pip</code> call — or by a silent fallback when a
-  package isn't available.</p>
-</blockquote>
+But it is, structurally, a *blocklist*. It cannot answer the prior question: is a package that nobody has
+ever flagged — never examined, never named in an advisory — trustworthy to install? Establishing that requires a
+different kind of infrastructure:
 
-<p>That last one deserves emphasis. Agents are optimistic systems; when instructed path fails, they try another.
-  A "trusted" environment that quietly falls back to public registries under failure is not trusted — it's trusted
-  <em>when convenient</em>.</p>
+- **Controlled package intake** — packages enter through a review process, not a self-service upload
+- **Verified source materials** — builds start from inspected sources, not from arbitrary wheels
+- **Independent builds** — artifacts are rebuilt rather than mirrored
+- **Malware scanning** — every release is scanned before publication
+- **Curated channels & enterprise package policy** — organizations control what their agents can resolve
 
-<h2>Where this could go for cloud agents</h2>
-<p>GitHub's Cloud Agents currently run on Actions infrastructure and are moving toward dedicated microVM compute —
-  largely for startup speed and pause/resume behavior, which CI infrastructure was never designed for. The current
-  "kitchen sink" image strategy (every runtime, every toolchain, in one image) may give way to a marketplace of
-  specialized base images. Three paths surfaced from the conversation:</p>
-<table>
-  <thead><tr><th>Path</th><th>Time horizon</th><th>Idea</th></tr></thead>
-  <tbody>
-    <tr><td>Anaconda base image for the microVM runtime</td><td>Medium term</td><td>A trusted Python foundation with curated channels, reproducible environment construction, and security metadata, maintained for the agent runtime</td></tr>
-    <tr><td>A <code>setup-anaconda</code> Action</td><td>Near term</td><td>Configure an Actions runner to resolve through approved channels, with policy that prevents silent fallback to public registries</td></tr>
-    <tr><td>MCP and skills in the plugin marketplace</td><td>Near term</td><td>Distribute Anaconda MCP plus a Conda golden-path skill so agents handle environments consistently</td></tr>
-  </tbody>
-</table>
-<p>A technically honest division of labor for the setup path: the Action installs and configures Conda with approved
-  channels; enterprise policy decides which channels and versions are permitted; network policy <em>enforces</em>
-  the decision rather than translating protocols (a PyPI request cannot be transparently redirected into a Conda
-  channel — different APIs, artifacts, and resolution semantics); Anaconda MCP guides environment operations; and
-  vulnerability intelligence from both sides runs continuously.</p>
+An admission-control layer like this doesn't replace vulnerability intelligence. It sits one step earlier:
+vulnerability intelligence catches what the world knows, admission control constrains what can arrive in the
+first place.
 
-<h2>What we're NOT saying yet</h2>
-<p>This was an exploratory call. No integration has been committed, no commercial structure agreed, no delivery date
-  set, no technical owners named on either side. Several hard design questions are open — who builds, signs, patches,
-  and supports such an image; how private-channel credentials are injected without entering model context; what
-  happens when an approved channel lacks a requested version; and at what level (enterprise, org, repository, session)
-  policy can be expressed.</p>
-<p>We're publishing this because the <em>framing</em> stands on its own regardless of what either company ships:
-  <strong>avoiding known-unsafe packages and establishing affirmative trust are different guarantees</strong>, and
-  agentic coding needs both. When an agent installs your dependencies at machine speed, "nobody has complained yet"
-  is not a security posture.</p>
+## What the ecosystem's bad days taught us
+
+Recent Python supply-chain incidents illustrate the distinction. In one cluster of incidents, malicious releases
+of a popular computer-vision library appeared on public registries and were pulled by downstream users before
+anyone could react. In two other cases, packages with injected malicious code propagated rapidly through public
+mirrors.
+
+None of those malicious releases entered Anaconda `main`. Not because we predicted the attacks, but
+because `main` is **not a transparent mirror**: intake delay, source verification, an
+independent build pipeline, malware scanning, and controlled publishing break the rapid-publish attack path that
+these incidents relied on.
+
+> The protection only holds when the environment is actually constrained to approved channels. It can be bypassed
+> by a setup script, by an unapproved channel, by a direct `pip` call — or by a silent fallback when a
+> package isn't available.
+
+That last one deserves emphasis. Agents are optimistic systems; when instructed path fails, they try another.
+A "trusted" environment that quietly falls back to public registries under failure is not trusted — it's trusted
+*when convenient*.
+
+## Where this could go for cloud agents
+
+GitHub's Cloud Agents currently run on Actions infrastructure and are moving toward dedicated microVM compute —
+largely for startup speed and pause/resume behavior, which CI infrastructure was never designed for. The current
+"kitchen sink" image strategy (every runtime, every toolchain, in one image) may give way to a marketplace of
+specialized base images. Three paths surfaced from the conversation:
+
+| Path | Time horizon | Idea |
+| --- | --- | --- |
+| Anaconda base image for the microVM runtime | Medium term | A trusted Python foundation with curated channels, reproducible environment construction, and security metadata, maintained for the agent runtime |
+| A `setup-anaconda` Action | Near term | Configure an Actions runner to resolve through approved channels, with policy that prevents silent fallback to public registries |
+| MCP and skills in the plugin marketplace | Near term | Distribute Anaconda MCP plus a Conda golden-path skill so agents handle environments consistently |
+
+A technically honest division of labor for the setup path: the Action installs and configures Conda with approved
+channels; enterprise policy decides which channels and versions are permitted; network policy *enforces*
+the decision rather than translating protocols (a PyPI request cannot be transparently redirected into a Conda
+channel — different APIs, artifacts, and resolution semantics); Anaconda MCP guides environment operations; and
+vulnerability intelligence from both sides runs continuously.
+
+## What we're NOT saying yet
+
+This was an exploratory call. No integration has been committed, no commercial structure agreed, no delivery date
+set, no technical owners named on either side. Several hard design questions are open — who builds, signs, patches,
+and supports such an image; how private-channel credentials are injected without entering model context; what
+happens when an approved channel lacks a requested version; and at what level (enterprise, org, repository, session)
+policy can be expressed.
+
+We're publishing this because the *framing* stands on its own regardless of what either company ships:
+**avoiding known-unsafe packages and establishing affirmative trust are different guarantees**, and
+agentic coding needs both. When an agent installs your dependencies at machine speed, "nobody has complained yet"
+is not a security posture.
 
 <div class="callout">
-  <span class="tag">What would make this real</span>
-  <p><b>One concrete experience:</b> an enterprise administrator enables Secure Python for cloud agents. Agent sessions
-  start from a maintained foundation, resolve dependencies through approved channels, use MCP and skills for
-  environment operations, and cannot silently fall back to unapproved registries.</p>
-  <p><b>One small prototype</b> and named technical owners. We'd rather prove the smallest loop end-to-end than
-  schedule a bigger conversation about a bigger roadmap.</p>
+<div class="tag">What would make this real</div>
+
+**One concrete experience:** an enterprise administrator enables Secure Python for cloud agents. Agent sessions
+start from a maintained foundation, resolve dependencies through approved channels, use MCP and skills for
+environment operations, and cannot silently fall back to unapproved registries.
+
+**One small prototype** and named technical owners. We'd rather prove the smallest loop end-to-end than
+schedule a bigger conversation about a bigger roadmap.
+
 </div>
 
 <div class="sources">
-  <h2>Sources &amp; notes</h2>
-  <ol>
-    <li>Notes from the Anaconda × GitHub exploratory call, August 27, 2026. Participants from Microsoft, GitHub, and Anaconda. Exploratory only.</li>
-    <li>Incident observations reference the malicious releases of a popular vision library (specific versions withheld here), a compromised LLM-tooling release, and a telephony SDK incident — in each case the malicious versions were not admitted to Anaconda <code>main</code>.</li>
-    <li>These examples demonstrate that controlled intake broke specific rapid-publish attack paths. They do not prove no malicious package could ever pass such controls.</li>
-  </ol>
+
+## Sources & notes
+
+1. Notes from the Anaconda × GitHub exploratory call, August 27, 2026. Participants from Microsoft, GitHub, and Anaconda. Exploratory only.
+2. Incident observations reference the malicious releases of a popular vision library (specific versions withheld here), a compromised LLM-tooling release, and a telephony SDK incident — in each case the malicious versions were not admitted to Anaconda `main`.
+3. These examples demonstrate that controlled intake broke specific rapid-publish attack paths. They do not prove no malicious package could ever pass such controls.
+
 </div>

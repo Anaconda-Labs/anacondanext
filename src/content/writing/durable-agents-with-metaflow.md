@@ -217,7 +217,7 @@ live.
   execution.
 
 <div class="callout">
-  <span class="tag">Try it</span>
+<div class="tag">Try it</div>
 
 **[github.com/Anaconda-Labs/metaflow-durability](https://github.com/Anaconda-Labs/metaflow-durability)**
 — install it, add one capability, keep your `@retry`.

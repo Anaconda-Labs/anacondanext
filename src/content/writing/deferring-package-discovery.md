@@ -11,74 +11,78 @@ byline:
   - { label: "Team", value: "Anaconda Incubation" }
   - { label: "Status", value: "Completed research · stop/defer decision" }
 ---
-<h2>The question</h2>
-<p>Can a semantic search tool return useful conda packages when an agent knows the task but not the package name?
-  An agent asked to "analyze this portfolio's risk with a Monte Carlo simulation" doesn't need to already know that
-  a suitable library exists — it needs a tool that finds candidates it can defend. Retrieval is the difference between
-  an agent that hallucinates a package name and an agent that grounds its choices in the real ecosystem.</p>
+## The question
 
-<h2>The action</h2>
-<p>We embedded the entire conda ecosystem — <strong>37,801 packages</strong> — and evaluated four approaches against
-  <strong>42 synthetic queries</strong> spanning task descriptions, intents, keywords, and comparisons:</p>
-<ul>
-  <li><strong>Baseline semantic retrieval</strong> — embed packages, embed the query, rank by similarity</li>
-  <li><strong>LLM enrichment</strong> — have a model expand and rewrite queries before retrieval</li>
-  <li><strong>Lexical reranking</strong> — intersect semantic ranking with keyword signals</li>
-  <li><strong>Popularity reranking</strong> — boost packages with strong download signals</li>
-</ul>
+Can a semantic search tool return useful conda packages when an agent knows the task but not the package name?
+An agent asked to "analyze this portfolio's risk with a Monte Carlo simulation" doesn't need to already know that
+a suitable library exists — it needs a tool that finds candidates it can defend. Retrieval is the difference between
+an agent that hallucinates a package name and an agent that grounds its choices in the real ecosystem.
 
-<h2>The evidence</h2>
-<table>
-  <thead><tr><th>Approach</th><th>Top-5 hit rate</th><th>Top-10 hit rate</th><th>Catch</th></tr></thead>
-  <tbody>
-    <tr><td>Baseline (any-preferred)</td><td><b>40%</b></td><td><b>62%</b></td><td>Keyword queries reached 80%; task descriptions only 33%</td></tr>
-    <tr><td>+ LLM enrichment</td><td>—</td><td><b>62%</b></td><td>No aggregate improvement over baseline</td></tr>
-    <tr><td>+ Popularity reranking</td><td>—</td><td><b>83%</b></td><td>Favors already-popular packages; amplifies download and expected-answer bias</td></tr>
-  </tbody>
-</table>
+## The action
 
-<p>Three findings mattered more than the table:</p>
-<ul>
-  <li><strong>Task descriptions are the hard case.</strong> The exact scenario that motivates the tool — an agent
-    describing a task in natural language — is where baseline retrieval performs worst (33% at top 10). Keyword
-    queries flatter the system because they leak vocabulary from the package metadata itself.</li>
-  <li><strong>Enrichment was a wash.</strong> LLM-rewritten queries did not improve aggregate top-10 retrieval. It
-    changed <em>which</em> queries improved and which regressed, roughly cancelling out.</li>
-  <li><strong>The 83% was seductive and suspect.</strong> Popularity reranking looked like a 21-point win, but it
-    systematically favors packages that were already popular — and our expected-answer lists were themselves biased
-    toward well-known packages. Part of that "improvement" is the metric agreeing with itself.</li>
-</ul>
+We embedded the entire conda ecosystem — **37,801 packages** — and evaluated four approaches against
+**42 synthetic queries** spanning task descriptions, intents, keywords, and comparisons:
 
-<blockquote>
-  <p>The evaluation proves package existence, not suitability. A valid alternative that simply wasn't on our expected
-  list counts as a failure — and a popular wrong answer counts as a success.</p>
-</blockquote>
+- **Baseline semantic retrieval** — embed packages, embed the query, rank by similarity
+- **LLM enrichment** — have a model expand and rewrite queries before retrieval
+- **Lexical reranking** — intersect semantic ranking with keyword signals
+- **Popularity reranking** — boost packages with strong download signals
 
-<h2>The decision</h2>
-<p>We kept <code>package_info</code> — known-package lookup, where retrieval quality is not the risk — and deferred
-  <code>find_package</code> discovery rather than shipping weak retrieval. A tool that hands an agent the wrong package
-  two times out of five, with confidence, is worse than no tool at all: the agent will proceed as if it were right.</p>
+## The evidence
+
+| Approach | Top-5 hit rate | Top-10 hit rate | Catch |
+| --- | --- | --- | --- |
+| Baseline (any-preferred) | **40%** | **62%** | Keyword queries reached 80%; task descriptions only 33% |
+| + LLM enrichment | — | **62%** | No aggregate improvement over baseline |
+| + Popularity reranking | — | **83%** | Favors already-popular packages; amplifies download and expected-answer bias |
+
+Three findings mattered more than the table:
+
+- **Task descriptions are the hard case.** The exact scenario that motivates the tool — an agent
+  describing a task in natural language — is where baseline retrieval performs worst (33% at top 10). Keyword
+  queries flatter the system because they leak vocabulary from the package metadata itself.
+- **Enrichment was a wash.** LLM-rewritten queries did not improve aggregate top-10 retrieval. It
+  changed *which* queries improved and which regressed, roughly cancelling out.
+- **The 83% was seductive and suspect.** Popularity reranking looked like a 21-point win, but it
+  systematically favors packages that were already popular — and our expected-answer lists were themselves biased
+  toward well-known packages. Part of that "improvement" is the metric agreeing with itself.
+
+> The evaluation proves package existence, not suitability. A valid alternative that simply wasn't on our expected
+> list counts as a failure — and a popular wrong answer counts as a success.
+
+## The decision
+
+We kept `package_info` — known-package lookup, where retrieval quality is not the risk — and deferred
+`find_package` discovery rather than shipping weak retrieval. A tool that hands an agent the wrong package
+two times out of five, with confidence, is worse than no tool at all: the agent will proceed as if it were right.
 
 <div class="callout">
-  <span class="tag">Next evidence — what would change the decision</span>
-  <p><b>Real queries.</b> Replace synthetic task descriptions with actual agent queries captured in the wild.</p>
-  <p><b>Independent relevance judgments.</b> Multi-answer, independently reviewed lists of acceptable packages per query, so valid alternatives stop counting as failures.</p>
-  <p><b>Fixed context budgets.</b> Compare methods under the same number of tokens the agent can afford to spend on results.</p>
-  <p><b>Downstream task success.</b> Connect retrieval rank to what actually matters: task completion, tool calls, latency, and tokens.</p>
+<div class="tag">Next evidence — what would change the decision</div>
+
+**Real queries.** Replace synthetic task descriptions with actual agent queries captured in the wild.
+
+**Independent relevance judgments.** Multi-answer, independently reviewed lists of acceptable packages per query, so valid alternatives stop counting as failures.
+
+**Fixed context budgets.** Compare methods under the same number of tokens the agent can afford to spend on results.
+
+**Downstream task success.** Connect retrieval rank to what actually matters: task completion, tool calls, latency, and tokens.
+
 </div>
 
-<h2>Why we're publishing a deferral</h2>
-<p>Most project write-ups end with a launch. Ours sometimes end with a decision not to build — and that's the point.
-  "Ship package lookup, defer discovery until the evidence improves" is a <em>good</em> outcome: it prevents weak
-  retrieval from becoming someone's dependency, and it names precisely the four things that would make revisiting
-  worthwhile. If you're building package discovery for agents and you have real queries or relevance judgments,
-  we'd genuinely like to compare notes.</p>
+## Why we're publishing a deferral
+
+Most project write-ups end with a launch. Ours sometimes end with a decision not to build — and that's the point.
+"Ship package lookup, defer discovery until the evidence improves" is a *good* outcome: it prevents weak
+retrieval from becoming someone's dependency, and it names precisely the four things that would make revisiting
+worthwhile. If you're building package discovery for agents and you have real queries or relevance judgments,
+we'd genuinely like to compare notes.
 
 <div class="sources">
-  <h2>Sources &amp; notes</h2>
-  <ol>
-    <li>Evaluation over 37,801 conda package embeddings; 42 synthetic queries across task, intent, keyword, and comparison types (Incubation, September 2026).</li>
-    <li>Package semantic search code and data — internal evaluation repository.</li>
-    <li>Hit rates measure whether a predefined expected package appears in the top-k results; all caveats in this post apply to that metric.</li>
-  </ol>
+
+## Sources & notes
+
+1. Evaluation over 37,801 conda package embeddings; 42 synthetic queries across task, intent, keyword, and comparison types (Incubation, September 2026).
+2. Package semantic search code and data — internal evaluation repository.
+3. Hit rates measure whether a predefined expected package appears in the top-k results; all caveats in this post apply to that metric.
+
 </div>
