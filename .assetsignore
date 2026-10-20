@@ -3,3 +3,6 @@
 .DS_Store
 wrangler.jsonc
 .assetsignore
+.github
+.kilo
+.wrangler
