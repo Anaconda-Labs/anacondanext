@@ -1,0 +1,301 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Brand from "../components/Brand.astro";
+
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
+  a.data.order - b.data.order;
+
+const experiments = (await getCollection("experiments")).sort(byOrder);
+const featured = experiments.find((e) => e.data.featured);
+const cards = experiments.filter((e) => !e.data.featured);
+const research = (await getCollection("research")).sort(byOrder);
+const partners = (await getCollection("partners")).sort(byOrder);
+
+const FeaturedBody = featured ? (await render(featured)).Content : undefined;
+const renderAll = <T extends Parameters<typeof render>[0]>(entries: T[]) =>
+  Promise.all(entries.map(async (entry) => ({ entry, Content: (await render(entry)).Content })));
+const cardItems = await renderAll(cards);
+const researchItems = await renderAll(research);
+const partnerItems = await renderAll(partners);
+
+/** Staggered reveal: first items animate in slightly before later ones. */
+const delay = (i: number) => `d${Math.min(i + 1, 4)}`;
+
+const description =
+  "Anaconda Next is where the Anaconda Incubation team publishes what's ready for the public: playable games, interactive field guides, agent research, and write-ups — a glimpse at what's next in Python, notebooks, and agents.";
+---
+<Base title="Anaconda Next — Experiments from the Incubation Team" description={description} page="home" extraOrb>
+  <Nav
+    slot="nav"
+    brandHref="#top"
+    links={[
+      { href: "#experiments", label: "Experiments" },
+      { href: "#writing", label: "Writing" },
+      { href: "#research", label: "Research" },
+      { href: "#partners", label: "Partners" },
+    ]}
+    cta={{ href: "#play", label: "Play something" }}
+  />
+
+  <header class="hero" id="top">
+    <div class="wrap">
+      <span class="kicker rise"><span class="dot"></span> The Anaconda Incubation team, shipping in public</span>
+      <h1 class="rise d1">A glimpse at what's<br><span class="grad">next</span> for Python &amp; agents</h1>
+      <p class="lede rise d2">Anaconda Next is where we test the edges before they become products —
+        <strong>playable games</strong> about the package ecosystem, <strong>interactive field guides</strong> that make
+        hard ideas tangible, and <strong>agent research</strong> with measurable evidence — published the moment it's ready
+        to be public, never before.</p>
+      <div class="hero-actions rise d3">
+        <a class="btn primary" href="#experiments">Explore the experiments</a>
+        <a class="btn ghost" href="#research">Read the evidence</a>
+      </div>
+      <div class="hero-meta rise d4">
+        <span><b>3</b>&nbsp; portfolio decisions this quarter</span>
+        <span><b>37,801</b>&nbsp; packages evaluated</span>
+        <span><b>2</b>&nbsp; games you can play right now</span>
+        <span><b>1</b>&nbsp; field guide you can bend</span>
+        <span><b>100%</b>&nbsp; negative results published</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="experiments">
+    <div class="wrap">
+      {featured?.data.featured && FeaturedBody && (
+        <>
+          <div class="section-head rise">
+            <div class="eyebrow">{featured.data.featured.eyebrow}</div>
+            <h2>{featured.data.featured.heading}</h2>
+            <p set:html={featured.data.featured.intro} />
+          </div>
+
+          <div class="featured rise d1">
+            <div class="copy">
+              <span class="tag">{featured.data.featured.tag}</span>
+              <h3>{featured.data.featured.panelTitle}</h3>
+              <FeaturedBody />
+              <div class="foot">
+                {featured.data.featured.actions.map((action) => (
+                  <a
+                    class={`btn ${action.style}`}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noopener" : undefined}
+                  >{action.label}</a>
+                ))}
+              </div>
+            </div>
+            <div class="side">
+              {featured.data.featured.stats.map((stat) => (
+                <div class="stat"><b>{stat.value}</b><span>{stat.label}</span></div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      <div class="cards" id="play">
+        {cardItems.map(({ entry, Content }, i) => {
+          const { data } = entry;
+          const Tag = data.link ? "a" : "div";
+          return (
+            <Tag
+              class:list={["card", "rise", delay(i), { playable: data.playable }]}
+              href={data.link?.href}
+            >
+              <div class="glyph">{data.glyph}</div>
+              <h3>{data.title}</h3>
+              <Content />
+              <div class="meta">
+                <span class={`pill ${data.status.kind}`}>{data.status.label}</span>
+                {data.pills.map((pill) => <span class="pill">{pill}</span>)}
+                {data.link && <span class="go">{data.link.label} ▸</span>}
+              </div>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section id="writing">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Writing</div>
+        <h2>Notes from the lab</h2>
+        <p>The reasoning behind the artifacts — what we tried, what we measured, and what we'd do differently. New pieces land
+           here as the work earns a public story.</p>
+      </div>
+
+      <div class="posts">
+        <a class="post rise d1" href="/writing/durable-agents-with-metaflow.html">
+          <span class="when">October 2026</span>
+          <h3>Durable agents with Metaflow</h3>
+          <p>Pydantic AI agents that survive crashes, retries, and restarts. One capability journals every model and tool call
+             into the Metaflow step, so a retry replays what finished and runs the rest live — with no workers, server, or
+             workflow code.</p>
+          <span class="read">Read the write-up ▸</span>
+        </a>
+
+        <a class="post rise d1" href="/writing/deferring-package-discovery.html">
+          <span class="when">September 2026</span>
+          <h3>Deferring package discovery: what 37,801 packages taught us</h3>
+          <p>Baseline retrieval found the expected conda package in the top 10 for 62% of task queries. LLM enrichment moved the
+             number exactly nowhere. The full evaluation story — and why 83% with popularity reranking was a number we refused
+             to ship — including the biases we caught in our own expected-answer lists.</p>
+          <span class="read">Read the write-up ▸</span>
+        </a>
+
+        <a class="post rise d2" href="/writing/known-unsafe-vs-affirmatively-trusted.html">
+          <span class="when">September 2026</span>
+          <h3>Known-unsafe vs. affirmatively trusted: a conversation with GitHub</h3>
+          <p>GitHub's Advisory Database teaches an agent to avoid packages already known to be dangerous. It cannot tell an agent
+             that an unknown package is trustworthy. Notes on where controlled package admission fits beside vulnerability
+             intelligence, and the three integration paths that emerged.</p>
+          <span class="read">Read the write-up ▸</span>
+        </a>
+
+        <a class="post rise d3" href="/writing/building-maps-with-python.html">
+          <span class="when">September 2026</span>
+          <h3>Building Maps with Python in the browser</h3>
+          <p>Real geodesy, no install: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion circles
+             after Tissot's 1858 idea. How the projection math, the data pipeline, and the "no Python setup needed" promise
+             came together — sources cited all the way down.</p>
+          <span class="read">Read the write-up ▸</span>
+        </a>
+
+        <a class="post rise d3" href="/writing/clue-ladders.html">
+          <span class="when">September 2026</span>
+          <h3>Clue ladders: designing a daily puzzle about real packages</h3>
+          <p>Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or three.
+             How we fact-check every rung against Distro-DB records, project history, and maintainer lore — and decide which
+             famous stories <em>not</em> to use.</p>
+          <span class="read">Read the write-up ▸</span>
+        </a>
+
+        <div class="post soon rise d4">
+          <span class="when">Coming soon</span>
+          <h3>Observe before mutate: notebooks as an evidence loop for agents</h3>
+          <p>Why we think an agent that executes a small step, observes the real result, and leaves behind a replayable notebook
+             beats one that just answers — and how we're testing that with deterministic scoring.</p>
+          <span class="read">Drafting…</span>
+        </div>
+
+        <div class="post soon rise d4">
+          <span class="when">Coming soon</span>
+          <h3>Question → Action → Evidence → Decision</h3>
+          <p>The operating formula behind every run of this team: why prototypes stay subordinate to decisions, why negative
+             results are published first-class, and what changes when you separate evidence generation from production ownership.</p>
+          <span class="read">Drafting…</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="research" class="tinted">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Research portfolio</div>
+        <h2>Question → Action → Evidence → Decision</h2>
+        <p>Every incubation run follows one operating formula. Prototypes stay subordinate to decisions, negative results are
+           first-class, and evidence generation stays separate from production ownership.</p>
+      </div>
+
+      <div class="method rise d1" id="method">
+        <div class="step"><div class="num">01</div><b>Question</b><span>A precise, falsifiable question — not a feature request.</span></div>
+        <div class="step"><div class="num">02</div><b>Action</b><span>The smallest real build that can generate evidence.</span></div>
+        <div class="step"><div class="num">03</div><b>Evidence</b><span>Numbers, demos, and failure modes — published either way.</span></div>
+        <div class="step"><div class="num">04</div><b>Decision</b><span>Ship, transfer, continue, or kill. All four are wins.</span></div>
+        <div class="step"><div class="num">05</div><b>Next evidence</b><span>What would change the decision if it arrived tomorrow.</span></div>
+      </div>
+
+      <div class="decisions">
+        {researchItems.map(({ entry, Content }, i) => (
+          <div class={`decision rise ${delay(i + 1)}`}>
+            <span class={`verdict ${entry.data.verdict.kind}`}>{entry.data.verdict.label}</span>
+            <h3>{entry.data.title}</h3>
+            <Content />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="partners">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Partnership explorations</div>
+        <h2>Trusted Python, wherever agents run</h2>
+        <p>We test our thesis — that agents deserve affirmatively trusted environments, not just vulnerability warnings — in
+           conversations with the people building the platforms agents will live on.</p>
+      </div>
+
+      <div class="partners">
+        {partnerItems.map(({ entry, Content }, i) => (
+          <div class={`partner rise ${delay(i)}`}>
+            <div class="logo"><span class="chip">{entry.data.chip}</span> {entry.data.name}</div>
+            <Content />
+            <div class="path"><b>Next:</b> {entry.data.next}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="formula rise">
+        <div class="f-chain">
+          <span>question</span><i>→</i><span>action</span><i>→</i><span>evidence</span><i>→</i><span>decision</span><i>→</i><span>next evidence</span>
+        </div>
+        <blockquote>&ldquo;This format keeps prototypes subordinate to decisions, makes negative results visible,
+          and separates evidence generation from production ownership.&rdquo;</blockquote>
+        <div class="attr">— The Incubation operating charter</div>
+      </div>
+    </div>
+  </section>
+
+  <footer slot="footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <Brand href="#top" />
+          <p class="blurb">Where the Anaconda Incubation team publishes what's ready for the public. We take small, sharp bets — on
+            agents, notebooks, packages, and projection math — and write up what we learn, including the things that didn't work.</p>
+        </div>
+        <div class="cols">
+          <div>
+            <h4>Play</h4>
+            <ul>
+              <li><a href="/quizaconda/">Quizaconda</a></li>
+              <li><a href="/condary/">Condary — Season 0</a></li>
+              <li><a href="https://mapswithpython.com" target="_blank" rel="noopener">Maps with Python ↗</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Read</h4>
+            <ul>
+              <li><a href="#writing">Notes from the lab</a></li>
+              <li><a href="#research">Portfolio decisions</a></li>
+              <li><a href="#method">Operating formula</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Anaconda</h4>
+            <ul>
+              <li><a href="https://www.anaconda.com" target="_blank" rel="noopener">anaconda.com</a></li>
+              <li><a href="https://github.com/Anaconda" target="_blank" rel="noopener">GitHub</a></li>
+              <li><a href="https://kilo.ai/docs" target="_blank" rel="noopener">Kilo docs</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="legal">
+        <span>© 2026 Anaconda, Inc. · anacondanext.com</span>
+        <span>Experiments may be incomplete, opinions may be wrong, evidence is real.</span>
+      </div>
+    </div>
+  </footer>
+</Base>
