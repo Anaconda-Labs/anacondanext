@@ -1,0 +1,59 @@
+---
+// Every page renders through this layout: <head>, ambient background, nav,
+// page content, footer.
+//
+// Slots:
+//   default   page content
+//   nav       replaces the default nav
+//   footer    replaces the compact footer
+import "../styles/site.css";
+import logo from "../assets/incubation-logo.png";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Selects the page section of site.css: home, writing or 404. */
+  page: "home" | "writing" | "404";
+  /** The home page shows a third background orb. */
+  extraOrb?: boolean;
+}
+
+const { title, description, page, extraOrb = false } = Astro.props;
+const url = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const image = Astro.site ? new URL(logo.src, Astro.site).href : undefined;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#08110d">
+<link rel="icon" type="image/png" href={logo.src}>
+<title>{title}</title>
+{description && <meta name="description" content={description}>}
+<meta property="og:title" content={title}>
+{description && <meta property="og:description" content={description}>}
+{image && <meta property="og:image" content={image}>}
+{url && <meta property="og:url" content={url}>}
+<slot name="head" />
+</head>
+<body class={`page-${page}`}>
+
+<div class="ambient" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  {extraOrb && <div class="orb c"></div>}
+</div>
+
+<slot name="nav"><Nav /></slot>
+
+<slot />
+
+<slot name="footer"><Footer /></slot>
+
+</body>
+</html>

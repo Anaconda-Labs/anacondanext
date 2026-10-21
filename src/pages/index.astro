@@ -1,0 +1,249 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Brand from "../components/Brand.astro";
+import * as list from "../lib/entries";
+
+const featured = await list.featured();
+const cards = await list.experiments();
+const decisions = await list.research();
+const partners = await list.partnerships();
+const posts = await list.writeups();
+
+/** Staggered reveal: first items animate in slightly before later ones. */
+const delay = (i: number) => `d${Math.min(i + 1, 4)}`;
+
+const description =
+  "Anaconda Next is where the Anaconda Incubation team publishes what's ready for the public: playable games, interactive field guides, agent research, and write-ups — a glimpse at what's next in Python, notebooks, and agents.";
+---
+<Base title="Anaconda Next — Experiments from the Incubation Team" description={description} page="home" extraOrb>
+  <Nav
+    slot="nav"
+    brandHref="#top"
+    links={[
+      { href: "#experiments", label: "Experiments" },
+      { href: "#writing", label: "Writing" },
+      { href: "#research", label: "Research" },
+      { href: "#partners", label: "Partners" },
+    ]}
+    cta={{ href: "#play", label: "Play something" }}
+  />
+
+  <header class="hero" id="top">
+    <div class="wrap">
+      <span class="kicker rise"><span class="dot"></span> The Anaconda Incubation team, shipping in public</span>
+      <h1 class="rise d1">A glimpse at what's<br><span class="grad">next</span> for Python &amp; agents</h1>
+      <p class="lede rise d2">Anaconda Next is where we test the edges before they become products —
+        <strong>playable games</strong> about the package ecosystem, <strong>interactive field guides</strong> that make
+        hard ideas tangible, and <strong>agent research</strong> with measurable evidence — published the moment it's ready
+        to be public, never before.</p>
+      <div class="hero-actions rise d3">
+        <a class="btn primary" href="#experiments">Explore the experiments</a>
+        <a class="btn ghost" href="#research">Read the evidence</a>
+      </div>
+      <div class="hero-meta rise d4">
+        <span><b>3</b>&nbsp; portfolio decisions this quarter</span>
+        <span><b>37,801</b>&nbsp; packages evaluated</span>
+        <span><b>2</b>&nbsp; games you can play right now</span>
+        <span><b>1</b>&nbsp; field guide you can bend</span>
+        <span><b>100%</b>&nbsp; negative results published</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="experiments">
+    <div class="wrap">
+      {featured && (
+        <>
+          <div class="section-head rise">
+            <div class="eyebrow">{featured.eyebrow}</div>
+            <h2>{featured.heading}</h2>
+            <p set:html={featured.intro} />
+          </div>
+
+          <div class="featured rise d1">
+            <div class="copy">
+              <span class="tag">{featured.tag}</span>
+              <h3>{featured.panelTitle}</h3>
+              <Fragment set:html={featured.text} />
+              <div class="foot">
+                {featured.actions.map((action) => (
+                  <a
+                    class={`btn ${action.style}`}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noopener" : undefined}
+                  >{action.label}</a>
+                ))}
+              </div>
+            </div>
+            <div class="side">
+              {featured.stats.map((stat) => (
+                <div class="stat"><b>{stat.value}</b><span>{stat.label}</span></div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      <div class="cards" id="play">
+        {cards.map(({ entry, experiment: card }, i) => {
+          const href = card.link && list.cardHref(entry);
+          const Tag = href ? "a" : "div";
+          return (
+            <Tag
+              class:list={["card", "rise", delay(i), { playable: card.playable }]}
+              href={href}
+            >
+              <div class="glyph">{card.glyph}</div>
+              <h3>{card.title ?? entry.data.title}</h3>
+              <Fragment set:html={card.blurb} />
+              <div class="meta">
+                <span class={`pill ${card.status.kind}`}>{card.status.label}</span>
+                {card.pills.map((pill) => <span class="pill">{pill}</span>)}
+                {card.link && <span class="go">{card.link.label} ▸</span>}
+              </div>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section id="writing">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Writing</div>
+        <h2>Notes from the lab</h2>
+        <p>The reasoning behind the artifacts — what we tried, what we measured, and what we'd do differently. New pieces land
+           here as the work earns a public story.</p>
+      </div>
+
+      <div class="posts">
+        {posts.map(({ entry, writeup: post }, i) => {
+          const Tag = post.soon ? "div" : "a";
+          return (
+            <Tag
+              class:list={["post", "rise", delay(i), { soon: post.soon }]}
+              href={post.soon ? undefined : list.writeupHref(entry)}
+            >
+              <span class="when">{post.date ? list.formatDate(post.date) : "Coming soon"}</span>
+              <h3>{post.title ?? entry.data.title}</h3>
+              <p set:html={post.summary} />
+              <span class="read">{post.soon ? "Drafting…" : "Read the write-up ▸"}</span>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section id="research" class="tinted">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Research portfolio</div>
+        <h2>Question → Action → Evidence → Decision</h2>
+        <p>Every incubation run follows one operating formula. Prototypes stay subordinate to decisions, negative results are
+           first-class, and evidence generation stays separate from production ownership.</p>
+      </div>
+
+      <div class="method rise d1" id="method">
+        <div class="step"><div class="num">01</div><b>Question</b><span>A precise, falsifiable question — not a feature request.</span></div>
+        <div class="step"><div class="num">02</div><b>Action</b><span>The smallest real build that can generate evidence.</span></div>
+        <div class="step"><div class="num">03</div><b>Evidence</b><span>Numbers, demos, and failure modes — published either way.</span></div>
+        <div class="step"><div class="num">04</div><b>Decision</b><span>Ship, transfer, continue, or kill. All four are wins.</span></div>
+        <div class="step"><div class="num">05</div><b>Next evidence</b><span>What would change the decision if it arrived tomorrow.</span></div>
+      </div>
+
+      <div class="decisions">
+        {decisions.map(({ entry, research: decision }, i) => {
+          return (
+            <div class={`decision rise ${delay(i + 1)}`}>
+              <span class={`verdict ${decision.verdict.kind}`}>{decision.verdict.label}</span>
+              <h3>{decision.title ?? entry.data.title}</h3>
+              <Fragment set:html={decision.text} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section id="partners">
+    <div class="wrap">
+      <div class="section-head rise">
+        <div class="eyebrow">Partnership explorations</div>
+        <h2>Trusted Python, wherever agents run</h2>
+        <p>We test our thesis — that agents deserve affirmatively trusted environments, not just vulnerability warnings — in
+           conversations with the people building the platforms agents will live on.</p>
+      </div>
+
+      <div class="partners">
+        {partners.map(({ entry, partnership: partner }, i) => {
+          return (
+            <div class={`partner rise ${delay(i)}`}>
+              <div class="logo"><span class="chip">{partner.chip}</span> {partner.title ?? entry.data.title}</div>
+              <Fragment set:html={partner.text} />
+              <div class="path"><b>Next:</b> {partner.next}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="formula rise">
+        <div class="f-chain">
+          <span>question</span><i>→</i><span>action</span><i>→</i><span>evidence</span><i>→</i><span>decision</span><i>→</i><span>next evidence</span>
+        </div>
+        <blockquote>&ldquo;This format keeps prototypes subordinate to decisions, makes negative results visible,
+          and separates evidence generation from production ownership.&rdquo;</blockquote>
+        <div class="attr">— The Incubation operating charter</div>
+      </div>
+    </div>
+  </section>
+
+  <footer slot="footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <Brand href="#top" />
+          <p class="blurb">Where the Anaconda Incubation team publishes what's ready for the public. We take small, sharp bets — on
+            agents, notebooks, packages, and projection math — and write up what we learn, including the things that didn't work.</p>
+        </div>
+        <div class="cols">
+          <div>
+            <h4>Play</h4>
+            <ul>
+              <li><a href="/quizaconda/">Quizaconda</a></li>
+              <li><a href="/condary/">Condary — Season 0</a></li>
+              <li><a href="https://mapswithpython.com" target="_blank" rel="noopener">Maps with Python ↗</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Read</h4>
+            <ul>
+              <li><a href="#writing">Notes from the lab</a></li>
+              <li><a href="#research">Portfolio decisions</a></li>
+              <li><a href="#method">Operating formula</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Anaconda</h4>
+            <ul>
+              <li><a href="https://www.anaconda.com" target="_blank" rel="noopener">anaconda.com</a></li>
+              <li><a href="https://github.com/Anaconda" target="_blank" rel="noopener">GitHub</a></li>
+              <li><a href="https://kilo.ai/docs" target="_blank" rel="noopener">Kilo docs</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="legal">
+        <span>© 2026 Anaconda, Inc. · anacondanext.com</span>
+        <span>Experiments may be incomplete, opinions may be wrong, evidence is real.</span>
+      </div>
+    </div>
+  </footer>
+</Base>

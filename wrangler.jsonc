@@ -1,10 +1,14 @@
 {
-  // Cloudflare config for anacondanext.com — static site, no build step.
-  // Deploy with: npx wrangler deploy
+  // Cloudflare config for anacondanext.com — static site built by Astro.
+  // `wrangler deploy` and `wrangler dev` run the build below first, then
+  // serve ./dist.
   "name": "anacondanext",
   "compatibility_date": "2026-09-18",
+  "build": {
+    "command": "npm run build"
+  },
   "assets": {
-    "directory": ".",
+    "directory": "./dist",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
   },

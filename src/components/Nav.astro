@@ -1,0 +1,34 @@
+---
+import Brand from "./Brand.astro";
+
+export interface NavLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  /** Where the logo points. The home page uses "#top". */
+  brandHref?: string;
+  links?: NavLink[];
+  /** Highlighted button at the end of the nav. */
+  cta?: NavLink;
+}
+
+const {
+  brandHref = "/",
+  links = [
+    { href: "/", label: "Home" },
+    { href: "/writing/", label: "Writing" },
+  ],
+  cta,
+} = Astro.props;
+---
+<nav>
+  <div class="nav-inner">
+    <Brand href={brandHref} />
+    <div class="nav-links">
+      {links.map((link) => <a href={link.href}>{link.label}</a>)}
+      {cta && <a class="nav-cta" href={cta.href}>{cta.label}</a>}
+    </div>
+  </div>
+</nav>

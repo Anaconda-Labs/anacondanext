@@ -1,0 +1,13 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/incubation-logo.png";
+// The anaconda-next lockup used in the nav and footers.
+interface Props {
+  href?: string;
+}
+const { href = "/" } = Astro.props;
+---
+<a class="brand" href={href}>
+  <span class="mark" aria-hidden="true"><Image src={logo} width={60} height={60} alt="" loading="eager" /></span>
+  anaconda<em>next</em>
+</a>
