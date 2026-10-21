@@ -26,7 +26,7 @@ const link = z.object({
 });
 
 /** Paths the site's own pages use; an app may not be published there. */
-const reservedPaths = ["/", "/writing/", "/404.html", "/_astro/", "/assets/"];
+const reservedPaths = ["/", "/writing/", "/404.html", "/_astro/"];
 
 const experiment = z.object({
   /** Overrides the entry title on the card. */
