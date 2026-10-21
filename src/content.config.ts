@@ -1,17 +1,20 @@
 // One collection, one markdown file per item in content/ (repo root).
 //
-// A file has up to four optional sections, and at least one is required. Which
+// A file has up to five optional sections, and at least one is required. Which
 // sections a file has decides where the item appears:
 //   experiment   -> experiments grid on the home page
 //   research     -> research portfolio on the home page
 //   partnership  -> partnership explorations on the home page
 //   writeup      -> writing lists, plus its own page built from the markdown body
+//   app          -> a standalone HTML file from content/apps/, published at its own path
 //
 // Ordering is not set in content. Each list sorts by its section's `date`
 // (see src/lib/entries.ts). Text fields marked "markdown" are rendered with
 // Astro's markdown pipeline by the loader below, the same way bodies are.
 //
 // A missing or misspelled field fails `astro build` with the file name and field.
+import { existsSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import type { Loader } from "astro/loaders";
@@ -21,6 +24,9 @@ const link = z.object({
   href: z.string(),
   label: z.string(),
 });
+
+/** Paths the site's own pages use; an app may not be published there. */
+const reservedPaths = ["/", "/writing/", "/404.html", "/_astro/", "/assets/"];
 
 const experiment = z.object({
   /** Overrides the entry title on the card. */
@@ -36,8 +42,11 @@ const experiment = z.object({
   }),
   /** Extra grey pills after the status. */
   pills: z.array(z.string()).default([]),
-  /** Makes the whole card a link, with `label` shown as "label ▸". */
-  link: link.optional(),
+  /**
+   * Makes the whole card a link, with `label` shown as "label ▸". `href` may be
+   * left out when the entry has an `app`; the card then links to the app.
+   */
+  link: link.partial({ href: true }).optional(),
   /** Games get a brighter hover border. */
   playable: z.boolean().default(false),
   /** Card text. Markdown. */
@@ -93,6 +102,19 @@ const writeup = z.object({
   cta: link.optional(),
 });
 
+/** Take a standalone HTML file and publish it at `path`. */
+const app = z.object({
+  /** The HTML file, relative to this .md file, e.g. ./apps/quizaconda.html. */
+  source: z.string(),
+  /** Where it is published, e.g. /quizaconda/ (served as /quizaconda/index.html). */
+  path: z
+    .string()
+    .regex(/^\/[a-z0-9-]+(\/[a-z0-9-]+)*\/$/, "Use a path like /name/ (lowercase letters, digits, dashes).")
+    .refine((p) => !reservedPaths.some((r) => p === r || (r !== "/" && p.startsWith(r))), {
+      message: `This path belongs to the site: ${reservedPaths.join(", ")}`,
+    }),
+});
+
 /** Parked: the large panel above the experiment cards. At most one entry should set it. */
 const featured = z.object({
   eyebrow: z.string(),
@@ -124,10 +146,15 @@ const schema = z
     research: research.optional(),
     partnership: partnership.optional(),
     writeup: writeup.optional(),
+    app: app.optional(),
     featured: featured.optional(),
   })
-  .refine((e) => e.experiment || e.research || e.partnership || e.writeup, {
-    message: "Add at least one section: experiment, research, partnership or writeup.",
+  .refine((e) => e.experiment || e.research || e.partnership || e.writeup || e.app, {
+    message: "Add at least one section: experiment, research, partnership, writeup or app.",
+  })
+  .refine((e) => !e.experiment?.link || e.experiment.link.href || e.app, {
+    message: "experiment.link needs an href, unless the entry has an app to link to.",
+    path: ["experiment", "link", "href"],
   });
 
 type Entry = z.infer<typeof schema>;
@@ -154,6 +181,19 @@ async function renderFields(entry: Entry, render: Render): Promise<Entry> {
   return entry;
 }
 
+/**
+ * Checks that an app's source file exists and rewrites `source` to a path from
+ * the project root, so the publishing endpoint can read it.
+ */
+function resolveAppSource(entry: Entry, filePath: string | undefined) {
+  if (!entry.app || !filePath) return;
+  const file = resolve(dirname(filePath), entry.app.source);
+  if (!existsSync(file)) {
+    throw new Error(`${filePath}: app.source "${entry.app.source}" does not exist (looked for ${file}).`);
+  }
+  entry.app.source = relative(process.cwd(), file);
+}
+
 /** glob() over content/, with markdown front matter fields rendered after validation. */
 function entriesLoader(): Loader {
   const files = glob({ pattern: "*.md", base: "./content" });
@@ -164,6 +204,7 @@ function entriesLoader(): Loader {
         ...context,
         parseData: async (props) => {
           const data = await context.parseData(props);
+          resolveAppSource(data as Entry, props.filePath);
           const render: Render = async (markdown) => (await context.renderMarkdown(markdown)).html;
           return (await renderFields(data as Entry, render)) as typeof data;
         },

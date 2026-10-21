@@ -1,12 +1,15 @@
 ---
 title: Condary — Season 0
+app:
+  source: ./apps/condary.html
+  path: /condary/
 slug: clue-ladders
 experiment:
   date: 2026-09-02
   glyph: "🧩"
   status: { label: playable now, kind: ship }
   pills: [5-clue ladders, "sourced & fact-checked"]
-  link: { href: /condary/, label: Play }
+  link: { label: Play }
   playable: true
   blurb: >-
     A daily clue-ladder puzzle about real conda packages, fact-checked against Distro-DB records, project docs and

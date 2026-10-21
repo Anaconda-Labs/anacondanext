@@ -4,7 +4,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 export type Entry = CollectionEntry<"entries">;
 type Data = Entry["data"];
-type Section = "experiment" | "research" | "partnership" | "writeup" | "featured";
+type Section = "experiment" | "research" | "partnership" | "writeup" | "app" | "featured";
 
 /** Every entry that has `section`, paired with that section (no longer optional). */
 async function withSection<K extends Section>(section: K) {
@@ -50,6 +50,18 @@ export async function writeups() {
   );
 }
 
+/** Standalone HTML apps. Fails the build if two entries publish to the same path. */
+export async function apps() {
+  const list = await withSection("app");
+  const seen = new Map<string, string>();
+  for (const { entry, app } of list) {
+    const other = seen.get(app.path);
+    if (other) throw new Error(`app.path ${app.path} is used by both ${other} and ${entry.id}.`);
+    seen.set(app.path, entry.id);
+  }
+  return list;
+}
+
 /** The featured panel, if an entry sets one. */
 export async function featured() {
   return (await withSection("featured"))[0]?.featured;
@@ -58,6 +70,9 @@ export async function featured() {
 /** "October 6, 2026". Dates are calendar days, so format in UTC. */
 export const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+/** Where an experiment card links: its own href, or the entry's app. */
+export const cardHref = (entry: Entry) => entry.data.experiment?.link?.href ?? entry.data.app?.path;
 
 /** URL of an entry's write-up page. */
 export const writeupHref = (entry: Entry) => `/writing/${entry.id}.html`;
