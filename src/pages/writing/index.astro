@@ -1,10 +1,10 @@
 ---
-import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.astro";
 import Brand from "../../components/Brand.astro";
+import { writeups, writeupHref, formatDate } from "../../lib/entries";
 
-const posts = (await getCollection("writing")).sort((a, b) => a.data.order - b.data.order);
+const posts = await writeups();
 const delay = (i: number) => `d${Math.min(i + 1, 4)}`;
 ---
 <Base
@@ -30,17 +30,17 @@ const delay = (i: number) => `d${Math.min(i + 1, 4)}`;
   </div>
 
   <div class="postlist">
-    {posts.map(({ id, data }, i) => {
-      const Tag = data.soon ? "div" : "a";
+    {posts.map(({ entry, writeup: post }, i) => {
+      const Tag = post.soon ? "div" : "a";
       return (
         <Tag
-          class:list={["postcard", "rise", delay(i), { soon: data.soon }]}
-          href={data.soon ? undefined : `/writing/${id}.html`}
+          class:list={["postcard", "rise", delay(i), { soon: post.soon }]}
+          href={post.soon ? undefined : writeupHref(entry)}
         >
-          <span class="when">{data.when}</span>
-          <h3>{data.title}</h3>
-          <p set:html={data.summary} />
-          <span class="read">{data.soon ? "Drafting…" : "Read ▸"}</span>
+          <span class="when">{post.date ? formatDate(post.date) : "Coming soon"}</span>
+          <h3>{post.title ?? entry.data.title}</h3>
+          <p set:html={post.summary} />
+          <span class="read">{post.soon ? "Drafting…" : "Read ▸"}</span>
         </Tag>
       );
     })}

@@ -1,34 +1,37 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.astro";
+import { writeups, formatDate } from "../../lib/entries";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("writing", (post) => !post.data.soon);
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+  const posts = (await writeups()).filter(({ writeup }) => !writeup.soon);
+  return posts.map(({ entry, writeup }) => ({ params: { slug: entry.id }, props: { entry, writeup } }));
 }
 
-const { post } = Astro.props;
-const { data } = post;
-const { Content } = await render(post);
+const { entry, writeup: post } = Astro.props;
+const { Content } = await render(entry);
+const title = post.title ?? entry.data.title;
+const description = post.description ?? post.summary.replace(/<[^>]+>/g, "");
+const when = post.date ? formatDate(post.date) : "";
 ---
-<Base title={`${data.title} — Anaconda Next`} description={data.description ?? data.summary} page="writing">
+<Base title={`${title} — Anaconda Next`} description={description} page="writing">
   <Nav
     slot="nav"
     links={[
       { href: "/", label: "Home" },
       { href: "/writing/", label: "Writing" },
     ]}
-    cta={data.cta ?? { href: "/#play", label: "Play something" }}
+    cta={post.cta ?? { href: "/#play", label: "Play something" }}
   />
 
   <article>
-    <span class="when">{data.kind ? `${data.when} · ${data.kind}` : data.when}</span>
-    <h1>{data.title}</h1>
-    {data.lede && <p class="lede" set:html={data.lede} />}
-    {data.byline.length > 0 && (
+    <span class="when">{post.format ? `${when} · ${post.format}` : when}</span>
+    <h1>{title}</h1>
+    {post.lede && <p class="lede" set:html={post.lede} />}
+    {post.byline.length > 0 && (
       <div class="byline">
-        {data.byline.map((item) => <span><b>{item.label}</b> {item.value}</span>)}
+        {post.byline.map((item) => <span><b>{item.label}</b> {item.value}</span>)}
       </div>
     )}
     <Content />

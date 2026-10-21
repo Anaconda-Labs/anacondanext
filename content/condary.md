@@ -1,16 +1,35 @@
 ---
-title: "Clue ladders: designing a daily puzzle about real packages"
-order: 5
-when: "September 2026"
-kind: "Design notes"
-summary: "Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or three. How we fact-check every rung against Distro-DB records, project history, and maintainer lore — and decide which famous stories <em>not</em> to use."
-description: "Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or three. How Condary's clue ladders get fact-checked — and which famous stories don't make the cut."
-lede: "<strong>Condary</strong> is a daily game about the packages that make up the Conda and Python ecosystems. Each puzzle is a ladder: five clues about one real package, from obscure origin story down to a mercy clue. The design constraint that shapes everything: <strong>the clues are about real packages, so the clues have to be fact-checked like real documentation.</strong>"
-byline:
-  - { label: "Game", value: "Condary — Season 0" }
-  - { label: "Team", value: "Anaconda Incubation" }
-  - { label: "Sources", value: "Distro-DB · project docs · maintainer history" }
-cta: { href: "/condary/", label: "Play Condary" }
+title: Condary — Season 0
+slug: clue-ladders
+experiment:
+  date: 2026-09-02
+  glyph: "🧩"
+  status: { label: playable now, kind: ship }
+  pills: [5-clue ladders, "sourced & fact-checked"]
+  link: { href: /condary/, label: Play }
+  playable: true
+  blurb: >-
+    A daily clue-ladder puzzle about real conda packages, fact-checked against Distro-DB records, project docs and
+    maintainer lore. Five clues per package; the modal solve lands at clue 2–3. How deep can you go?
+writeup:
+  title: "Clue ladders: designing a daily puzzle about real packages"
+  date: 2026-09-02
+  format: Design notes
+  summary: >-
+    Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or
+    three. How we fact-check every rung against Distro-DB records, project history, and maintainer lore — and decide
+    which famous stories *not* to use.
+  description: "Five clues per package, ordered as a single information gradient, with the modal solve landing at clue two or three. How Condary's clue ladders get fact-checked — and which famous stories don't make the cut."
+  lede: >-
+    **Condary** is a daily game about the packages that make up the Conda and Python ecosystems. Each puzzle is a
+    ladder: five clues about one real package, from obscure origin story down to a mercy clue. The design constraint
+    that shapes everything: **the clues are about real packages, so the clues have to be fact-checked like real
+    documentation.**
+  byline:
+    - { label: "Game", value: "Condary — Season 0" }
+    - { label: "Team", value: "Anaconda Incubation" }
+    - { label: "Sources", value: "Distro-DB · project docs · maintainer history" }
+  cta: { href: /condary/, label: Play Condary }
 ---
 ## The ladder
 

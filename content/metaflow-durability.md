@@ -1,26 +1,43 @@
 ---
 title: Durable agents with Metaflow
-order: 1
-when: October 2026
-kind: Build notes
-summary: >-
-  Pydantic AI agents that survive crashes, retries, and restarts. One capability journals every model and tool call
-  into the Metaflow step, so a retry replays what finished and runs the rest live — with no workers, server, or
-  workflow code.
-description: >-
-  Pydantic AI agents that survive crashes, retries, and restarts. A one-line capability journals every model and tool
-  call into the Metaflow step, so a retry replays what finished and runs the rest live.
-lede: >-
-  <a href="https://github.com/Anaconda-Labs/metaflow-durability" target="_blank" rel="noopener">metaflow-durability</a>
-  makes Pydantic AI agents survive crashes, retries, and restarts inside Metaflow steps. Add one capability to the
-  agent, keep your <code>@retry</code>, and a failed step replays the model and tool calls that already finished
-  instead of paying for them again.
-byline:
-  - { label: Source, value: github.com/Anaconda-Labs/metaflow-durability }
-  - { label: Owner, value: Albert DeFusco }
-  - { label: Status, value: "Evidence — released open source, gathering feedback" }
-  - { label: Team, value: Anaconda Incubation }
-  - { label: Stack, value: Pydantic AI · Metaflow }
+slug: durable-agents-with-metaflow
+experiment:
+  date: 2026-10-02
+  glyph: "♻️"
+  status: { label: open source, kind: cont }
+  pills: [Pydantic AI, Metaflow]
+  link: { href: "https://github.com/Anaconda-Labs/metaflow-durability", label: Repo }
+  blurb: >-
+    Pydantic AI agents that survive crashes, retries, and restarts. One capability journals every model and tool call
+    into the Metaflow step, so `@retry` replays what finished and runs the rest live. No workers, server or
+    workflow code: Metaflow's tasks, artifacts and retries are the engine.
+research:
+  date: 2026-10-05
+  verdict: { label: Evidence, kind: continue }
+  text: >-
+    A one-line capability that makes Pydantic AI agents durable on Metaflow, released open source. Now gathering
+    evidence from real flows before deciding what comes next.
+writeup:
+  date: 2026-10-06
+  format: Build notes
+  summary: >-
+    Pydantic AI agents that survive crashes, retries, and restarts. One capability journals every model and tool call
+    into the Metaflow step, so a retry replays what finished and runs the rest live — with no workers, server, or
+    workflow code.
+  description: >-
+    Pydantic AI agents that survive crashes, retries, and restarts. A one-line capability journals every model and
+    tool call into the Metaflow step, so a retry replays what finished and runs the rest live.
+  lede: >-
+    [metaflow-durability](https://github.com/Anaconda-Labs/metaflow-durability)
+    makes Pydantic AI agents survive crashes, retries, and restarts inside Metaflow steps. Add one capability to the
+    agent, keep your `@retry`, and a failed step replays the model and tool calls that already finished
+    instead of paying for them again.
+  byline:
+    - { label: Source, value: github.com/Anaconda-Labs/metaflow-durability }
+    - { label: Owner, value: Albert DeFusco }
+    - { label: Status, value: "Evidence — released open source, gathering feedback" }
+    - { label: Team, value: Anaconda Incubation }
+    - { label: Stack, value: Pydantic AI · Metaflow }
 ---
 ## Agent runs are long, expensive, and fragile
 

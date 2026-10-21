@@ -1,15 +1,38 @@
 ---
-title: "Deferring package discovery: what 37,801 packages taught us"
-order: 2
-when: "September 10, 2026"
-kind: "Research"
-summary: "Baseline retrieval found the expected conda package in the top 10 for 62% of task queries. LLM enrichment moved the number exactly nowhere. The full evaluation story — and why 83% with popularity reranking was a number we refused to ship — including the biases we caught in our own expected-answer lists."
-description: "Can semantic search reliably help an agent discover a conda package from a task description? We evaluated retrieval, enrichment, and reranking across 42 synthetic queries and 37,801 packages — and decided to defer."
-lede: "An agent that knows the task but not the package needs a discovery tool it can trust. We built one, measured it honestly, and decided <strong>not to ship it</strong>. This is the full story — including the number that looked great and the biases hiding behind it."
-byline:
-  - { label: "Owner", value: "Albert DeFusco" }
-  - { label: "Team", value: "Anaconda Incubation" }
-  - { label: "Status", value: "Completed research · stop/defer decision" }
+title: Agentic package discovery
+slug: deferring-package-discovery
+experiment:
+  date: 2026-09-15
+  glyph: "🔍"
+  status: { label: deferred on evidence, kind: stop }
+  pills: [42 queries, "lookup shipped, discovery deferred"]
+  blurb: >-
+    Can semantic search help an agent find the right conda package from a task description? Across 42 synthetic
+    queries and 37,801 packages: 62% top-10 baseline, 83% with popularity reranking — and a bias we don't want to ship.
+research:
+  title: Package discovery retrieval
+  date: 2026-09-24
+  verdict: { label: Stop / defer, kind: defer }
+  text: >-
+    LLM enrichment added nothing; popularity reranking amplified bias. We shipped known-package lookup and deferred
+    discovery rather than shipping weak retrieval. The evidence for revisiting is spelled out.
+writeup:
+  title: "Deferring package discovery: what 37,801 packages taught us"
+  date: 2026-09-10
+  format: Research
+  summary: >-
+    Baseline retrieval found the expected conda package in the top 10 for 62% of task queries. LLM enrichment moved
+    the number exactly nowhere. The full evaluation story — and why 83% with popularity reranking was a number we
+    refused to ship — including the biases we caught in our own expected-answer lists.
+  description: "Can semantic search reliably help an agent discover a conda package from a task description? We evaluated retrieval, enrichment, and reranking across 42 synthetic queries and 37,801 packages — and decided to defer."
+  lede: >-
+    An agent that knows the task but not the package needs a discovery tool it can trust. We built one, measured it
+    honestly, and decided **not to ship it**. This is the full story — including the number that looked great and the
+    biases hiding behind it.
+  byline:
+    - { label: "Owner", value: "Albert DeFusco" }
+    - { label: "Team", value: "Anaconda Incubation" }
+    - { label: "Status", value: "Completed research · stop/defer decision" }
 ---
 ## The question
 

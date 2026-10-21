@@ -1,15 +1,35 @@
 ---
-title: "Known-unsafe vs. affirmatively trusted"
-order: 3
-when: "September 5, 2026"
-kind: "Field notes"
-summary: "GitHub's Advisory Database teaches an agent to avoid packages already known to be dangerous. It cannot tell an agent that an unknown package is trustworthy. Notes on where controlled package admission fits beside vulnerability intelligence, and the three integration paths that emerged."
-description: "An agent can check dependencies against a vulnerability database. That answers a different question than whether an unknown package is trustworthy. Notes from a conversation with GitHub about Copilot Cloud Agents."
-lede: "Notes from a recent conversation with the GitHub team about <strong>Copilot Cloud Agents</strong> and what it would take for the Python those agents install to be trusted by construction. The sharpest idea from the call: <strong>a vulnerability database answers \"is this package known to be bad?\" — not \"is this package good?\"</strong> Those are different security guarantees, and agents need both."
-byline:
-  - { label: "Context", value: "Anaconda × GitHub exploratory call" }
-  - { label: "Team", value: "Anaconda Incubation" }
-  - { label: "Status", value: "Exploratory — no integration committed" }
+title: GitHub — Copilot Cloud Agents
+slug: known-unsafe-vs-affirmatively-trusted
+partnership:
+  chip: "⬢"
+  next: one focused prototype, one defined end-to-end Secure Python experience, named technical owners.
+  text: |-
+    GitHub's Advisory Database helps an agent avoid *known* bad packages. Anaconda's controlled intake, independent
+    builds, and malware scanning establish that an unknown package is *trusted*. Two different layers of the same
+    defense.
+
+    Three paths surfaced from the conversation: an Anaconda-maintained base image for GitHub's emerging cloud-agent
+    microVM runtime, a `setup-anaconda` Action for approved channels on Actions runners, and Anaconda MCP + skills in
+    GitHub's plugin marketplace.
+writeup:
+  title: Known-unsafe vs. affirmatively trusted
+  date: 2026-09-05
+  format: Field notes
+  summary: >-
+    GitHub's Advisory Database teaches an agent to avoid packages already known to be dangerous. It cannot tell an
+    agent that an unknown package is trustworthy. Notes on where controlled package admission fits beside
+    vulnerability intelligence, and the three integration paths that emerged.
+  description: "An agent can check dependencies against a vulnerability database. That answers a different question than whether an unknown package is trustworthy. Notes from a conversation with GitHub about Copilot Cloud Agents."
+  lede: >-
+    Notes from a recent conversation with the GitHub team about **Copilot Cloud Agents** and what it would take for
+    the Python those agents install to be trusted by construction. The sharpest idea from the call: **a vulnerability
+    database answers "is this package known to be bad?" — not "is this package good?"** Those are different security
+    guarantees, and agents need both.
+  byline:
+    - { label: "Context", value: "Anaconda × GitHub exploratory call" }
+    - { label: "Team", value: "Anaconda Incubation" }
+    - { label: "Status", value: "Exploratory — no integration committed" }
 ---
 ## Two questions, not one
 

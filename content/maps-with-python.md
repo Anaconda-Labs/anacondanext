@@ -1,15 +1,46 @@
 ---
-title: "One world, many maps, zero setup"
-order: 4
-when: "September 2026"
-kind: "Build notes"
-summary: "Real geodesy, no install: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion circles after Tissot's 1858 idea. How the projection math, the data pipeline, and the \"no Python setup needed\" promise came together — sources cited all the way down."
-description: "Real geodesy in the browser: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion circles after Tissot's 1858 idea. How Maps with Python came together."
-lede: "<a href=\"https://mapswithpython.com\" target=\"_blank\" rel=\"noopener\">Maps with Python</a> is an interactive field guide to map projections. Grab a globe, flatten it, and watch every projection bend the truth differently — with the geodesy computed live by <strong>NumPy running in your browser</strong>. This is how it came together, and why \"no Python setup needed\" was the whole point."
-byline:
-  - { label: "Site", value: "mapswithpython.com" }
-  - { label: "Team", value: "Anaconda Incubation" }
-  - { label: "Stack", value: "Pyodide · NumPy · Three.js · KaTeX" }
+title: Maps with Python
+slug: building-maps-with-python
+featured:
+  eyebrow: Now showing
+  heading: One world. Many maps. Zero setup.
+  intro: >-
+    An interactive Python field guide to map projections: **Maps with Python**.
+    Grab a globe, flatten it, and watch every projection bend the truth differently — all computed in your browser.
+  tag: Interactive field guide · live
+  panelTitle: Maps with Python — what changes when we flatten the world?
+  text: |-
+    A sailor needs a steady bearing. A reader comparing countries needs fair areas. Every flat map is an optimization
+    problem, so we built the tradeoffs you can *feel*: drag a real globe, then watch Tissot's distortion circles
+    stretch across Mercator, Gall–Peters, Equal Earth, and AuthaGraph.
+
+    Everything runs locally in your browser — the geodesy is computed by **NumPy in Pyodide**, the globe is rendered
+    with Three.js, and every projection's math is cited down to the paper.
+  stats:
+    - { value: "4", label: "projections, side by side" }
+    - { value: "0", label: "Python installs needed — Pyodide" }
+    - { value: "10", label: "cited sources & notes" }
+    - { value: "1", label: "planet, gently distorted" }
+  actions:
+    - { href: "https://mapswithpython.com", label: "Open mapswithpython.com ▸", style: primary, external: true }
+    - { href: "#writing", label: "How we built it", style: ghost }
+writeup:
+  title: One world, many maps, zero setup
+  date: 2026-09-03
+  format: Build notes
+  summary: >-
+    Real geodesy, no install: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion
+    circles after Tissot's 1858 idea. How the projection math, the data pipeline, and the "no Python setup needed"
+    promise came together — sources cited all the way down.
+  description: "Real geodesy in the browser: NumPy running in Pyodide, a Three.js globe, Natural Earth geometry, and distortion circles after Tissot's 1858 idea. How Maps with Python came together."
+  lede: >-
+    [Maps with Python](https://mapswithpython.com) is an interactive field guide to map projections. Grab a globe,
+    flatten it, and watch every projection bend the truth differently — with the geodesy computed live by **NumPy
+    running in your browser**. This is how it came together, and why "no Python setup needed" was the whole point.
+  byline:
+    - { label: "Site", value: "mapswithpython.com" }
+    - { label: "Team", value: "Anaconda Incubation" }
+    - { label: "Stack", value: "Pyodide · NumPy · Three.js · KaTeX" }
 ---
 ## A map is an optimization problem
 
